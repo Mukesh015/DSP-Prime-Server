@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import dotenv from "dotenv";
+import { TankData } from "../entities/TankData.entity";
 
 dotenv.config();
 
@@ -13,5 +14,5 @@ export const AppDataSource = new DataSource({
     database: process.env.DB_NAME,
     synchronize: true, // ❗ disable in production
     logging: false,
-    entities: ["src/entities/*.ts"],
+    entities: [TankData],
 });
