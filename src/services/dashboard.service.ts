@@ -19,16 +19,21 @@ export const getDashboardStats = async () => {
     const totalTanks = TANK_PARAMETERS.length;
 
     const now = new Date();
-    const ONLINE_LIMIT_MIN = 5;
+    const STALE_TIMEOUT_MINUTES = 15; // must match tank details API
 
     let online = 0;
+    let offline = 0;
     let issues = 0;
 
     latestData.forEach((tank: any) => {
         const diff =
             (now.getTime() - new Date(tank.date_time).getTime()) / (1000 * 60);
 
-        if (diff <= ONLINE_LIMIT_MIN) {
+        const isOffline = diff > STALE_TIMEOUT_MINUTES;
+
+        if (isOffline) {
+            offline++;
+        } else {
             online++;
         }
 
@@ -40,7 +45,7 @@ export const getDashboardStats = async () => {
     return {
         totalTanks,
         onlineTanks: online,
-        offlineTanks: totalTanks - online,
+        offlineTanks: offline,
         issuesDetected: issues,
     };
 };
