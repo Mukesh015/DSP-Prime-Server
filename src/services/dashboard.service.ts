@@ -5,7 +5,7 @@ import { TANK_PARAMETERS } from "../constants/tankParameters";
 export const getDashboardStats = async () => {
     const repo = AppDataSource.getRepository(TankData);
 
-    const latestData = await repo.query(`
+    const rows: any[] = await repo.query(`
     SELECT t1.*
     FROM MQTT_Logs t1
     INNER JOIN (
@@ -16,18 +16,34 @@ export const getDashboardStats = async () => {
     ON t1.tank_no = t2.tank_no AND t1.date_time = t2.max_time
   `);
 
-    const totalTanks = TANK_PARAMETERS.length;
-
     const now = new Date();
-    const STALE_TIMEOUT_MINUTES = 15; // must match tank details API
+    const STALE_TIMEOUT_MINUTES = 15;
+
+    const rowMap = new Map(rows.map((r) => [r.tank_no, r]));
 
     let online = 0;
     let offline = 0;
     let issues = 0;
 
-    latestData.forEach((tank: any) => {
+    const tanks = TANK_PARAMETERS.map((cfg) => {
+        const row = rowMap.get(cfg.tank_no);
+
+        if (!row) {
+            offline++;
+
+            return {
+                tank_no: cfg.tank_no,
+                location: cfg.location,
+                status: "offline",
+                lastUpdated: null,
+                alert: "No Data",
+            };
+        }
+
+        const lastUpdated = new Date(row.date_time);
+
         const diff =
-            (now.getTime() - new Date(tank.date_time).getTime()) / (1000 * 60);
+            (now.getTime() - lastUpdated.getTime()) / (1000 * 60);
 
         const isOffline = diff > STALE_TIMEOUT_MINUTES;
 
@@ -37,15 +53,28 @@ export const getDashboardStats = async () => {
             online++;
         }
 
-        if (tank.ul_status !== "valid") {
+        if (row.ul_status !== "valid") {
             issues++;
         }
+
+        return {
+            tank_no: cfg.tank_no,
+            location: cfg.location,
+            device_id: cfg.device_id,
+            lastUpdated,
+            ultra_height: row.ultra_height,
+            status: isOffline ? "offline" : "online",
+            alert: row.ul_status !== "valid" ? "Sensor Issue" : "Normal",
+        };
     });
 
     return {
-        totalTanks,
-        onlineTanks: online,
-        offlineTanks: offline,
-        issuesDetected: issues,
+        stats: {
+            totalTanks: TANK_PARAMETERS.length,
+            onlineTanks: online,
+            offlineTanks: offline,
+            issuesDetected: issues,
+        },
+        tanks,
     };
 };
