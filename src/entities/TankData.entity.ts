@@ -20,16 +20,16 @@ export class TankData {
     date_time!: Date;
 
     @Column({ type: "float", nullable: true })
-    ultra_height!: number;
+    ultra_height!: number | null;
 
     @Column({ type: "float", nullable: true })
-    lidar_height!: number;
+    lidar_height!: number | null;
 
-    @Column({ nullable: true })
-    location!: string;
+    @Column({ type: "varchar", length: 255, nullable: true })
+    location!: string | null;
 
-    @Column({ nullable: true })
-    ul_status!: string;
+    @Column({ type: "varchar", length: 50, nullable: true })
+    ul_status!: string | null;
 
     @CreateDateColumn({ type: "datetime" })
     last_inserted!: Date;   // auto server time
