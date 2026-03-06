@@ -57,6 +57,7 @@ export class UserService {
 
         // Check email uniqueness if updating email
         if (data.email && data.email !== user.email) {
+
             const existingUser = await this.userRepository.findOne({
                 where: { email: data.email }
             });
@@ -64,6 +65,11 @@ export class UserService {
             if (existingUser) {
                 throw new Error("Email already in use");
             }
+        }
+
+        // Hash password if updating password
+        if (data.password) {
+            data.password = await bcrypt.hash(data.password, 10);
         }
 
         Object.assign(user, data);
