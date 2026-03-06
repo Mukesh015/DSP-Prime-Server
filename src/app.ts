@@ -5,6 +5,7 @@ import dashboardRoutes from "./routes/dashboard.route";
 import analyticsRoutes from "./routes/analytics.route";
 import notificationRoutes from "./routes/notification.routes";
 import reportRoutes from "./routes/report.routes";
+import userRoutes from "./routes/user.routes";
 import { checkOfflineTanks } from "./utils/offlineChecker";
 
 const app = express();
@@ -17,6 +18,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/users", userRoutes);
 
 //  Check offline tanks every 15 minutes
 setInterval(async () => {

@@ -3,6 +3,7 @@ import { DataSource } from "typeorm";
 import dotenv from "dotenv";
 import { TankData } from "../entities/TankData.entity";
 import { TankNotification } from "../entities/TankNotification.entity";
+import { User } from "../entities/User.entity";
 
 dotenv.config();
 
@@ -15,5 +16,5 @@ export const AppDataSource = new DataSource({
     database: process.env.DB_NAME,
     synchronize: true, // ❗ disable in production
     logging: false,
-    entities: [TankData, TankNotification],
+    entities: [TankData, TankNotification, User],
 });

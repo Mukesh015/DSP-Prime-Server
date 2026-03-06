@@ -72,16 +72,27 @@ export const fetchTankData = async () => {
 
         let border = "green";
         let alertMsg = "Normal Flow";
+        let flowStatus = "No Leakage";
+        let msg = "";
 
         if (offline) {
             border = "red";
-            alertMsg = "Device Offline";
+            alertMsg = "Network issue";
+            msg = "network_issue";
+            if (metrics.isLowLevel) {
+                flowStatus = "low_level";
+            } else if (metrics.isHighLevel) {
+                flowStatus = "high_level";
+            }
         } else if (metrics.isLowLevel) {
-            border = "red";
             alertMsg = "Low Level";
+            msg = "low_level";
+            flowStatus = "low_level";
+
         } else if (metrics.isHighLevel) {
-            border = "red";
             alertMsg = "High Level";
+            msg = "high_level";
+            flowStatus = "high_level";
         }
 
         return {
@@ -95,9 +106,9 @@ export const fetchTankData = async () => {
             liters: Math.round(metrics.liters),
             fillPercent: metrics.fillPercent.toFixed(2),
             lastUpdated: istTime,
-
+            msg,
             border,
-            flow: "No Leakage",
+            flow: flowStatus,
             alert: alertMsg,
         };
     });
