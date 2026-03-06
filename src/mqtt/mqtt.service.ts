@@ -39,7 +39,8 @@ export const startMqttListener = () => {
       }
 
       let ultraHeight: number | null = null;
-      let status = payload.ul_status ?? "valid";
+      let status = "valid";
+      // let status = payload.ul_status ?? "valid";
 
       // handle invalid readings
       if (payload.ul_m === "N/A" || payload.ul_m == null) {

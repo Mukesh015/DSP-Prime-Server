@@ -1,5 +1,6 @@
 import { AppDataSource } from "../config/data-source";
 import { User } from "../entities/User.entity";
+import bcrypt from "bcrypt";
 
 export class UserService {
 
@@ -8,14 +9,37 @@ export class UserService {
     // Get All Users
     async getAllUsers() {
         return await this.userRepository.find({
-            order: { id: "ASC" }
+            order: {
+                id: "ASC"
+            }
         });
     }
 
     // Create User
     async createUser(data: Partial<User>) {
 
-        const user = this.userRepository.create(data);
+        const { email, password } = data;
+
+        // Check if email already exists
+        const existingUser = await this.userRepository.findOne({
+            where: { email }
+        });
+
+        if (existingUser) {
+            throw new Error("Email already exists");
+        }
+
+        if (!password) {
+            throw new Error("Password is required");
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const user = this.userRepository.create({
+            ...data,
+            password: hashedPassword
+        });
 
         return await this.userRepository.save(user);
     }
@@ -29,6 +53,17 @@ export class UserService {
 
         if (!user) {
             throw new Error("User not found");
+        }
+
+        // Check email uniqueness if updating email
+        if (data.email && data.email !== user.email) {
+            const existingUser = await this.userRepository.findOne({
+                where: { email: data.email }
+            });
+
+            if (existingUser) {
+                throw new Error("Email already in use");
+            }
         }
 
         Object.assign(user, data);

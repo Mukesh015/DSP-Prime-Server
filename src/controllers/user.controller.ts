@@ -27,11 +27,14 @@ export const getAllUsers = async (req: Request, res: Response) => {
 export const createUser = async (req: Request, res: Response) => {
     try {
 
-        const { name, phone } = req.body;
+        const { name, phone, email, role, password } = req.body;
 
         const user = await userService.createUser({
             name,
-            phone
+            phone,
+            email,
+            role,
+            password
         });
 
         return res.status(201).json({
@@ -54,11 +57,14 @@ export const updateUser = async (req: Request, res: Response) => {
     try {
 
         const id = Number(req.params.id);
-        const { name, phone } = req.body;
+        const { name, phone, email, role, password } = req.body;
 
         const updatedUser = await userService.updateUser(id, {
             name,
-            phone
+            phone,
+            email,
+            role,
+            password
         });
 
         return res.json({
