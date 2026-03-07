@@ -10,38 +10,34 @@ export const getTankGraphData = async (
 ) => {
     const repo = AppDataSource.getRepository(TankData);
 
-    console.log('tank_no, ', tank_no,startDate,endDate )
-
     const rows = await repo.query(
         `
-  SELECT tank_no, ultra_height, date_time
-  FROM MQTT_Logs
-  WHERE tank_no = ?
-  AND date_time >= ?
-  AND date_time < DATE_ADD(?, INTERVAL 1 DAY)
-  ORDER BY date_time ASC
-  `,
+        SELECT tank_no, ultra_height, date_time
+        FROM MQTT_Logs
+        WHERE tank_no = ?
+        AND date_time >= ?
+        AND date_time < DATE_ADD(?, INTERVAL 1 DAY)
+        ORDER BY date_time ASC
+        `,
         [tank_no, startDate, endDate]
     );
-
-    console.log("Rows from DB:", rows.length);
-    console.log(rows[0]);
 
     const cfg = TANK_PARAMETERS.find((t) => t.tank_no === tank_no);
 
     const data = rows.map((row: any) => {
+
         const metrics = computeTankMetrics(cfg!, Number(row.ultra_height));
 
         return [
             new Date(row.date_time).getTime(),
-            Math.round(metrics.liters),
+            Number(metrics.fillPercent.toFixed(2)) // percentage
         ];
     });
 
     return [
         {
-            name: "Water Level",
-            data,
-        },
+            name: "Water Level %",
+            data
+        }
     ];
 };
