@@ -8,6 +8,7 @@ export const getTankGraphData = async (
     startDate: string,
     endDate: string
 ) => {
+
     const repo = AppDataSource.getRepository(TankData);
 
     const rows = await repo.query(
@@ -28,9 +29,14 @@ export const getTankGraphData = async (
 
         const metrics = computeTankMetrics(cfg!, Number(row.ultra_height));
 
+        let percent = Number(metrics.fillPercent.toFixed(2));
+
+        // clamp between 0 and 100
+        percent = Math.max(0, Math.min(percent, 100));
+
         return [
             new Date(row.date_time).getTime(),
-            Number(metrics.fillPercent.toFixed(2)) // percentage
+            percent
         ];
     });
 
