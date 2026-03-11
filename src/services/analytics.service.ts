@@ -16,8 +16,7 @@ export const getTankGraphData = async (
         SELECT tank_no, ultra_height, date_time
         FROM MQTT_Logs
         WHERE tank_no = ?
-        AND date_time >= ?
-        AND date_time < DATE_ADD(?, INTERVAL 1 DAY)
+        AND date_time BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY)
         ORDER BY date_time ASC
         `,
         [tank_no, startDate, endDate]
@@ -25,13 +24,17 @@ export const getTankGraphData = async (
 
     const cfg = TANK_PARAMETERS.find((t) => t.tank_no === tank_no);
 
+    if (!cfg) {
+        return [{ name: "Water Level %", data: [] }];
+    }
+
     const data = rows.map((row: any) => {
 
-        const metrics = computeTankMetrics(cfg!, Number(row.ultra_height));
+        const metrics = computeTankMetrics(cfg, Number(row.ultra_height));
 
         let percent = Number(metrics.fillPercent.toFixed(2));
 
-        // clamp between 0 and 100
+        // clamp value between 0 and 100
         percent = Math.max(0, Math.min(percent, 100));
 
         return [
