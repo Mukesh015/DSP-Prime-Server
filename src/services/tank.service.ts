@@ -77,8 +77,8 @@ export const fetchTankData = async () => {
 
         if (offline) {
             border = "red";
-            alertMsg = "Network issue";
-            msg = "network_issue";
+            alertMsg = "Network Lag";
+            msg = "network_Lag";
             if (metrics.isLowLevel) {
                 flowStatus = "low_level";
             } else if (metrics.isHighLevel) {
