@@ -2,12 +2,10 @@ export interface TankParameter {
     device_id: string;
     tank_no: string;
     location: string;
-
     diameter_breadth?: number;
     length?: number;
     width?: number;
     height?: number;
-
     tank_volume: number;
     upper_safe_limit_pct: number;
     lower_safe_limit: number;

@@ -2,6 +2,7 @@ import { AppDataSource } from "../config/data-source";
 import { TankData } from "../entities/TankData.entity";
 import { TANK_PARAMETERS } from "../constants/tankParameters";
 import { computeTankMetrics } from "../utils/computeTankMetrics";
+import calculateETF from "../utils/calculateETF";
 
 export const fetchTankData = async () => {
     const repo = AppDataSource.getRepository(TankData);
@@ -13,14 +14,43 @@ export const fetchTankData = async () => {
              ROW_NUMBER() OVER (PARTITION BY tank_no ORDER BY date_time DESC) AS rn
       FROM MQTT_Logs
     ) t
-    WHERE rn = 1
+    WHERE rn <= 2
   `);
 
     const now = new Date();
-    const rowMap = new Map(rows.map((r) => [r.tank_no, r]));
+    // const rowMap = new Map(rows.map((r) => [r.tank_no, r]));
+    const tankRows = new Map<string, any[]>();
+
+    rows.forEach((r) => {
+        if (!tankRows.has(r.tank_no)) {
+            tankRows.set(r.tank_no, []);
+        }
+        tankRows.get(r.tank_no)!.push(r);
+    });
 
     const result = TANK_PARAMETERS.map((cfg) => {
-        const row = rowMap.get(cfg.tank_no);
+        // const row = rowMap.get(cfg.tank_no);
+        const tankData = tankRows.get(cfg.tank_no);
+        const row = tankData?.[0];
+        const prev = tankData?.[1];
+        let etf: string | null = null;
+
+
+        // Calculate ETF only if we have both current and previous data with valid heights
+        if (row && prev && row.ultra_height && prev.ultra_height) {
+
+            etf = calculateETF(
+                cfg,
+                Number(row.ultra_height),
+                Number(prev.ultra_height),
+                new Date(row.date_time),
+                new Date(prev.date_time)
+            );
+
+            console.log('etf', etf, row?.tank_no);
+        }
+
+        console.log('etf', etf, row?.tank_no);
 
         if (!row) {
             return {
@@ -37,6 +67,7 @@ export const fetchTankData = async () => {
                 border: "red",
                 flow: "No Data",
                 alert: "No Data",
+                etf
             };
         }
 
@@ -64,6 +95,7 @@ export const fetchTankData = async () => {
                 border: "red",
                 flow: "Sensor Fault",
                 alert: "Sensor Fault",
+                etf
             };
         }
 
@@ -110,6 +142,7 @@ export const fetchTankData = async () => {
             border,
             flow: flowStatus,
             alert: alertMsg,
+            etf
         };
     });
 
