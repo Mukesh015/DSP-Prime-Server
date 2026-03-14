@@ -1,4 +1,9 @@
 import { AppDataSource } from "../config/data-source";
+import { TANK_PARAMETERS } from "../constants/tankParameters";
+
+const tankTimeoutMap = new Map(
+    TANK_PARAMETERS.map(t => [t.tank_no, t.stale_timeout_minutes])
+);
 
 export const getOfflineReport = async (
     page: number = 1,
@@ -6,19 +11,17 @@ export const getOfflineReport = async (
     search: string = ""
 ) => {
 
-    const offset = (page - 1) * limit;
-
     let searchCondition = "";
 
     if (search) {
         searchCondition = `
-      AND (tank_no LIKE '%${search}%'
-      OR device_id LIKE '%${search}%')
-    `;
+        AND (tank_no LIKE '%${search}%'
+        OR device_id LIKE '%${search}%')
+        `;
     }
 
     const rows = await AppDataSource.query(`
-  
+
     WITH ordered AS (
         SELECT
             tank_no,
@@ -49,32 +52,25 @@ export const getOfflineReport = async (
         online_time,
         gap_min
     FROM gaps
-    WHERE gap_min > 15
+    WHERE gap_min IS NOT NULL
     ${searchCondition}
     ORDER BY offline_time DESC
-    LIMIT ${limit} OFFSET ${offset}
 
-  `);
+    `);
 
-    const totalRes = await AppDataSource.query(`
-  
-    SELECT COUNT(*) as count
-    FROM (
-        SELECT
-            TIMESTAMPDIFF(
-                MINUTE,
-                LAG(date_time) OVER (PARTITION BY tank_no ORDER BY date_time),
-                date_time
-            ) gap_min
-        FROM MQTT_Logs
-    ) t
-    WHERE gap_min > 15
+    const filtered = rows.filter((r: any) => {
+        const timeout = tankTimeoutMap.get(r.tank_no) || 15;
+        return r.gap_min > timeout;
+    });
 
-  `);
+    const total = filtered.length;
 
-    const total = totalRes[0].count;
+    const paginated = filtered.slice(
+        (page - 1) * limit,
+        page * limit
+    );
 
-    const data = rows.map((r: any) => {
+    const data = paginated.map((r: any) => {
 
         const hours = Math.floor(r.gap_min / 60);
         const minutes = r.gap_min % 60;
@@ -99,7 +95,6 @@ export const getOfflineReport = async (
     };
 };
 
-
 export const getOfflineExportedReport = async (
     start: string,
     end: string
@@ -117,6 +112,7 @@ export const getOfflineExportedReport = async (
                 ORDER BY date_time
             ) prev_time
         FROM MQTT_Logs
+        WHERE date_time BETWEEN ? AND ?
     ),
 
     gaps AS (
@@ -137,32 +133,34 @@ export const getOfflineExportedReport = async (
         online_time,
         gap_min
     FROM gaps
-    WHERE gap_min > 15
-    AND DATE(offline_time) BETWEEN ? AND ?
     ORDER BY offline_time DESC
 
-  `, [start, end]);
+    `, [start, end]);
 
-    const data = rows.map((r: any) => {
+    const data = rows
+        .filter((r: any) => {
+            const timeout = tankTimeoutMap.get(r.tank_no) || 15;
+            return r.gap_min > timeout;
+        })
+        .map((r: any) => {
 
-        const hours = Math.floor(r.gap_min / 60);
-        const minutes = r.gap_min % 60;
+            const hours = Math.floor(r.gap_min / 60);
+            const minutes = r.gap_min % 60;
 
-        return {
-            tank_no: r.tank_no,
-            device_id: r.device_id,
-            offline_time: r.offline_time,
-            online_time: r.online_time,
-            offline_period: `${hours} hr ${minutes} min`
-        };
-    });
+            return {
+                tank_no: r.tank_no,
+                device_id: r.device_id,
+                offline_time: r.offline_time,
+                online_time: r.online_time,
+                offline_period: `${hours} hr ${minutes} min`
+            };
+        });
 
     return {
         count: data.length,
         data
     };
 };
-
 
 export const getSMSReport = async (
     page: number = 1,

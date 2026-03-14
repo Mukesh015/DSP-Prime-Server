@@ -73,7 +73,8 @@ export const fetchTankData = async () => {
 
         const dbTime = new Date(row.date_time);
         const diffMin = (now.getTime() - dbTime.getTime()) / (1000 * 60);
-        const offline = diffMin > 15;
+        const STALE_TIMEOUT_MINUTES = cfg.stale_timeout_minutes || 15;
+        const offline = diffMin > STALE_TIMEOUT_MINUTES;
 
         const istTime = new Date(
             dbTime.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })

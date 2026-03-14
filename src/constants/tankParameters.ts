@@ -9,6 +9,7 @@ export interface TankParameter {
     tank_volume: number;
     upper_safe_limit_pct: number;
     lower_safe_limit: number;
+    stale_timeout_minutes?: number;
 }
 
 export const TANK_PARAMETERS: TankParameter[] = [
@@ -21,6 +22,7 @@ export const TANK_PARAMETERS: TankParameter[] = [
         tank_volume: 1350,
         upper_safe_limit_pct: 1287.65,
         lower_safe_limit: 1094.54,
+        stale_timeout_minutes: 15,
     },
     {
         device_id: "PL_DSP_AD02",
@@ -31,6 +33,7 @@ export const TANK_PARAMETERS: TankParameter[] = [
         tank_volume: 3261.66,
         upper_safe_limit_pct: 3000,
         lower_safe_limit: 2457.04,
+        stale_timeout_minutes: 2,
     },
     {
         device_id: "PL_DSP_AD03",
@@ -41,6 +44,7 @@ export const TANK_PARAMETERS: TankParameter[] = [
         tank_volume: 12566,
         upper_safe_limit_pct: 11660,
         lower_safe_limit: 9328,
+        stale_timeout_minutes: 25,
     },
     {
         device_id: "PL_DSP_AD04",
@@ -51,6 +55,7 @@ export const TANK_PARAMETERS: TankParameter[] = [
         tank_volume: 8924.6,
         upper_safe_limit_pct: 8478.37,
         lower_safe_limit: 6782.7,
+        stale_timeout_minutes: 30,
     },
     {
         device_id: "PL_DSP_AD05",
@@ -61,6 +66,7 @@ export const TANK_PARAMETERS: TankParameter[] = [
         tank_volume: 12747.4,
         upper_safe_limit_pct: 12110,
         lower_safe_limit: 9688,
+        stale_timeout_minutes: 35,
     },
     {
         device_id: "PL_DSP_AD06",
@@ -71,6 +77,7 @@ export const TANK_PARAMETERS: TankParameter[] = [
         tank_volume: 11810.7,
         upper_safe_limit_pct: 11220.2,
         lower_safe_limit: 8976.16,
+        stale_timeout_minutes: 40,
     },
     {
         device_id: "PL_DSP_AD07",
@@ -81,6 +88,7 @@ export const TANK_PARAMETERS: TankParameter[] = [
         tank_volume: 12810,
         upper_safe_limit_pct: 10950,
         lower_safe_limit: 8881.68,
+        stale_timeout_minutes: 45,
     },
     {
         device_id: "PL_DSP_AD08",
@@ -91,6 +99,7 @@ export const TANK_PARAMETERS: TankParameter[] = [
         tank_volume: 21970.3,
         upper_safe_limit_pct: 20871.8,
         lower_safe_limit: 16697.4,
+        stale_timeout_minutes: 50,
     },
     {
         device_id: "PL_DSP_AD09",
@@ -101,6 +110,7 @@ export const TANK_PARAMETERS: TankParameter[] = [
         tank_volume: 7432.7,
         upper_safe_limit_pct: 7390.6,
         lower_safe_limit: 5912.48,
+        stale_timeout_minutes: 55,
     },
     {
         device_id: "PL_DSP_AD10",
@@ -111,6 +121,7 @@ export const TANK_PARAMETERS: TankParameter[] = [
         tank_volume: 15250.3,
         upper_safe_limit_pct: 14570.2,
         lower_safe_limit: 11656,
+        stale_timeout_minutes: 60,
     },
     {
         device_id: "PL_DSP_AD11",
@@ -122,5 +133,6 @@ export const TANK_PARAMETERS: TankParameter[] = [
         tank_volume: 822000,
         upper_safe_limit_pct: 780900,
         lower_safe_limit: 534300,
+        stale_timeout_minutes: 120,
     },
 ];
