@@ -3,21 +3,21 @@ import { TankData } from "../entities/TankData.entity";
 import { TANK_PARAMETERS } from "../constants/tankParameters";
 
 export const getDashboardStats = async () => {
+
     const repo = AppDataSource.getRepository(TankData);
 
     const rows: any[] = await repo.query(`
-    SELECT t1.*
-    FROM MQTT_Logs t1
-    INNER JOIN (
-        SELECT tank_no, MAX(date_time) AS max_time
-        FROM MQTT_Logs
-        GROUP BY tank_no
-    ) t2
-    ON t1.tank_no = t2.tank_no AND t1.date_time = t2.max_time
-  `);
+        SELECT t1.*
+        FROM MQTT_Logs t1
+        INNER JOIN (
+            SELECT tank_no, MAX(date_time) AS max_time
+            FROM MQTT_Logs
+            GROUP BY tank_no
+        ) t2
+        ON t1.tank_no = t2.tank_no AND t1.date_time = t2.max_time
+    `);
 
     const now = new Date();
-    const STALE_TIMEOUT_MINUTES = 15;
 
     const rowMap = new Map(rows.map((r) => [r.tank_no, r]));
 
@@ -26,6 +26,7 @@ export const getDashboardStats = async () => {
     let issues = 0;
 
     const tanks = TANK_PARAMETERS.map((cfg) => {
+
         const row = rowMap.get(cfg.tank_no);
 
         if (!row) {
@@ -34,6 +35,7 @@ export const getDashboardStats = async () => {
             return {
                 tank_no: cfg.tank_no,
                 location: cfg.location,
+                device_id: cfg.device_id,
                 status: "offline",
                 lastUpdated: null,
                 alert: "No Data",
@@ -42,10 +44,12 @@ export const getDashboardStats = async () => {
 
         const lastUpdated = new Date(row.date_time);
 
-        const diff =
+        const diffMinutes =
             (now.getTime() - lastUpdated.getTime()) / (1000 * 60);
 
-        const isOffline = diff > STALE_TIMEOUT_MINUTES;
+        const timeout = cfg.stale_timeout_minutes || 15;
+
+        const isOffline = diffMinutes > timeout;
 
         if (isOffline) {
             offline++;
