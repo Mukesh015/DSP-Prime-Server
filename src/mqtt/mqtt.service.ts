@@ -114,6 +114,7 @@ export const startMqttListener = () => {
         device_id: payload.device_id,
         type: alert.type,
         message: alert.message,
+        created_at: new Date(),
       });
 
       await notificationRepo.save(notif);
