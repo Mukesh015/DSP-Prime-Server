@@ -72,10 +72,8 @@ export const getOfflineReport = async (
 
     const data = paginated.map((r: any) => {
 
-        const timeout = tankTimeoutMap.get(r.tank_no) || 15;
-        const adjustedGap = r.gap_min - timeout;
-        const hours = Math.floor(adjustedGap / 60);
-        const minutes = adjustedGap % 60;
+        const hours = Math.floor(r.gap_min / 60);
+        const minutes = r.gap_min % 60;
 
         return {
             tank_no: r.tank_no,
